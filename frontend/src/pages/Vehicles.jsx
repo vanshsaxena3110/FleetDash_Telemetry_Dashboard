@@ -143,7 +143,7 @@ export default function Vehicles({ isDarkMode = false }) {
   const [selectedVehicle, setSelectedVehicle] = React.useState(vehicleList[0])
 
   return (
-    <div className="flex-grow overflow-y-auto p-6 md:p-8 flex flex-col gap-6 text-left bg-transparent">
+    <div className=" overflow-y-auto p-6 md:p-8 flex flex-col gap-6 text-left bg-transparent">
       
       {/* Header Row */}
       <div className="flex items-center justify-between select-none">
