@@ -36,7 +36,7 @@ const DUP_TECH_STACK = [...TECH_STACK, ...TECH_STACK, ...TECH_STACK]
 
 export default function Home({ onLoginSuccess }) {
   const [showLoginModal, setShowLoginModal] = React.useState(false)
-  const [username, setUsername] = React.useState('')
+  const [Username, setUsername] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [isLoading, setIsLoading] = React.useState(false)
   const [error, setError] = React.useState('')
@@ -47,7 +47,7 @@ export default function Home({ onLoginSuccess }) {
     setIsLoading(true)
     
     setTimeout(() => {
-      if (username === 'admin' && password === 'admin') {
+      if (Username === 'admin' && password === 'admin') {
         setIsLoading(false)
         setShowLoginModal(false)
         if (onLoginSuccess) {
@@ -614,7 +614,7 @@ export default function Home({ onLoginSuccess }) {
                 </label>
                 <input 
                   type="text" 
-                  value={username}
+                  value={Username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="admin"
                   required
