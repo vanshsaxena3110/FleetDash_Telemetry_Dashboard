@@ -1,4 +1,5 @@
 
+import mongoose from "mongoose";
 import Vehicle from "../models/Vehicle.js";
 
 // Convert backend fields to the names expected by your frontend
@@ -38,8 +39,10 @@ export const createVehicle = async (req, res) => {
       });
     }
 
+    const normalizedVehicleNumber = String(vehicleNumber).trim().toUpperCase();
+
     const existingVehicle = await Vehicle.findOne({
-      vehicleNumber: vehicleNumber.trim().toUpperCase(),
+      vehicleNumber: normalizedVehicleNumber,
     });
 
     if (existingVehicle) {
@@ -49,7 +52,7 @@ export const createVehicle = async (req, res) => {
     }
 
     const vehicle = await Vehicle.create({
-      vehicleNumber,
+      vehicleNumber: normalizedVehicleNumber,
       driverName,
       driverContact,
       type,
@@ -79,6 +82,65 @@ export const getVehicles = async (req, res) => {
     return res.status(200).json({
       count: vehicles.length,
       vehicles: vehicles.map(formatVehicle),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+// PUT /api/vehicle/update/:id
+export const updateVehicle = async (req, res) => {
+  try {
+    const { vehicleNumber, driverName, driverContact, type, status } = req.body;
+
+    const vehicle = await Vehicle.findOne({
+      _id: req.params.id,
+      createdBy: req.user._id,
+    });
+
+    if (!vehicle) {
+      return res.status(404).json({
+        message: "Vehicle not found",
+      });
+    }
+
+    if (vehicleNumber) vehicle.vehicleNumber = vehicleNumber;
+    if (driverName) vehicle.driverName = driverName;
+    if (driverContact) vehicle.driverContact = driverContact;
+    if (type) vehicle.type = type;
+    if (status) vehicle.status = status;
+
+    await vehicle.save();
+
+    return res.status(200).json({
+      message: "Vehicle updated successfully",
+      vehicle: formatVehicle(vehicle),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+// DELETE /api/vehicle/delete/:id
+export const deleteVehicle = async (req, res) => {
+  try {
+    const vehicle = await Vehicle.findOneAndDelete({
+      _id: req.params.id,
+      createdBy: req.user._id,
+    });
+
+    if (!vehicle) {
+      return res.status(404).json({
+        message: "Vehicle not found",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Vehicle deleted successfully",
     });
   } catch (error) {
     return res.status(500).json({
