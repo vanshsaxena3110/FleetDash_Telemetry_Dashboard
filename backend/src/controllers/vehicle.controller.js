@@ -90,10 +90,16 @@ export const getVehicles = async (req, res) => {
   }
 };
 
-// PUT /api/vehicle/update/:id
+// PATCH /api/vehicle/update/:id
 export const updateVehicle = async (req, res) => {
   try {
     const { vehicleNumber, driverName, driverContact, type, status } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        message: "Invalid vehicle ID format",
+      });
+    }
 
     const vehicle = await Vehicle.findOne({
       _id: req.params.id,
@@ -106,11 +112,34 @@ export const updateVehicle = async (req, res) => {
       });
     }
 
-    if (vehicleNumber) vehicle.vehicleNumber = vehicleNumber;
-    if (driverName) vehicle.driverName = driverName;
-    if (driverContact) vehicle.driverContact = driverContact;
-    if (type) vehicle.type = type;
-    if (status) vehicle.status = status;
+    if (vehicleNumber !== undefined) {
+      const normalizedVehicleNumber = String(vehicleNumber).trim().toUpperCase();
+      
+      if (!normalizedVehicleNumber) {
+        return res.status(400).json({
+          message: "Vehicle number cannot be empty",
+        });
+      }
+
+      // Check if another vehicle has the same vehicle number
+      const existingVehicle = await Vehicle.findOne({
+        vehicleNumber: normalizedVehicleNumber,
+        _id: { $ne: vehicle._id },
+      });
+
+      if (existingVehicle) {
+        return res.status(409).json({
+          message: "Vehicle number already exists on another vehicle",
+        });
+      }
+
+      vehicle.vehicleNumber = normalizedVehicleNumber;
+    }
+
+    if (driverName !== undefined) vehicle.driverName = driverName;
+    if (driverContact !== undefined) vehicle.driverContact = driverContact;
+    if (type !== undefined) vehicle.type = type;
+    if (status !== undefined) vehicle.status = status;
 
     await vehicle.save();
 
@@ -119,6 +148,11 @@ export const updateVehicle = async (req, res) => {
       vehicle: formatVehicle(vehicle),
     });
   } catch (error) {
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        message: error.message,
+      });
+    }
     return res.status(500).json({
       message: error.message,
     });
@@ -128,6 +162,12 @@ export const updateVehicle = async (req, res) => {
 // DELETE /api/vehicle/delete/:id
 export const deleteVehicle = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        message: "Invalid vehicle ID format",
+      });
+    }
+
     const vehicle = await Vehicle.findOneAndDelete({
       _id: req.params.id,
       createdBy: req.user._id,
