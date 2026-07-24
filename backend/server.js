@@ -11,6 +11,7 @@ import geofenceRoutes from "./src/routes/geofence.routes.js"
 import dashboardRoutes from "./src/routes/dashboard.routes.js"
 import alertRoutes from "./src/routes/alert.routes.js"
 import telemetryRoutes from "./src/routes/telemetry.routes.js"
+import analyticsRoutes from "./src/routes/analytics.routes.js"
 dotenv.config()
 const PORT = process.env.PORT || 8080
 
@@ -27,6 +28,7 @@ app.use("/api/geofence",geofenceRoutes)
 app.use("/api/dashboard",dashboardRoutes)
 app.use("/api/alert",alertRoutes)
 app.use("/api/telemetry", telemetryRoutes)
+app.use("/api/analytics", analyticsRoutes)
 
 app.get("/",(req,res)=>{
     res.send("server is connected")
