@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Telemetry from "../models/Telemetry.js";
 import Vehicle from "../models/Vehicle.js";
 import Alert from "../models/Alert.js";
+import { getIO } from "../sockets/socket.js";
 
 /**
  * @desc    Record new telemetry entry & update vehicle status/location
@@ -76,6 +77,24 @@ export const addTelemetry = async (req, res) => {
 
     vehicle.status = vehicleStatus;
     await vehicle.save();
+
+    const updatedVehicleData = {
+      id: vehicle._id,
+      vehicleNumber: vehicle.vehicleNumber,
+      status: vehicle.status,
+      currentLocation: vehicle.currentLocation,
+      latestTelemetry: vehicle.latestTelemetry,
+    };
+
+    // Emit live telemetry event over socket
+    try {
+      getIO().emit("telemetry_update", {
+        telemetry,
+        vehicle: updatedVehicleData,
+      });
+    } catch (err) {
+      console.warn("Socket broadcast warning:", err.message);
+    }
 
     // Check thresholds for auto alert generation
     if (speed > 90) {

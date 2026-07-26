@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --animate-marquee-right: marquee-right 20s linear infinite;
+  --animate-marquee-right: marquee-right 25s linear infinite;
   --animate-fade-in: fade-in 0.2s ease-out;
   --animate-slide-up: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -35,6 +35,14 @@
   }
 }
 
+.font-serif-display {
+  font-family: 'Instrument Serif', Georgia, serif;
+}
+
+.font-sans-body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
 /* Custom scrollbar for modern looks */
 ::-webkit-scrollbar {
   width: 8px;
@@ -57,14 +65,7 @@
 body {
   background-color: #f8fafc;
   color: #1e293b;
-  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-}
-
-/* Moving gradient background helper */
-.bg-grid-pattern {
-  background-size: 40px 40px;
-  background-image: linear-gradient(to right, rgba(16, 185, 129, 0.04) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(16, 185, 129, 0.04) 1px, transparent 1px);
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
 }
 
 /* 3D card flip utility classes */
@@ -81,4 +82,3 @@ body {
 .rotate-y-180 {
   transform: rotateY(180deg);
 }
-
