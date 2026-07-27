@@ -11,7 +11,7 @@ export const initSocket = (httpServer) => {
   });
 
   io.on("connection", (socket) => {
-    console.log(`🔌 Socket client connected: ${socket.id}`);
+    console.log(` Socket client connected: ${socket.id}`);
 
     // Join user or vehicle specific room
     socket.on("join_room", (room) => {
