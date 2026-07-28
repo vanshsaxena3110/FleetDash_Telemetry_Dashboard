@@ -41,7 +41,7 @@ export default function Home({ onLoginSuccess }) {
     setIsLoading(true)
 
     setTimeout(() => {
-      if (Username === 'admin' && password === 'admin') {
+      if (Username === 'vansh' && password === 'vansh1234') {
         setIsLoading(false)
         setShowLoginModal(false)
         if (onLoginSuccess) {
@@ -340,11 +340,6 @@ export default function Home({ onLoginSuccess }) {
                   {error}
                 </p>
               )}
-
-              <div className="bg-white/5 border border-white/10 rounded p-2.5 text-[11px] text-white/70 flex items-start gap-2 select-none">
-                <span className="font-bold text-emerald-400">Demo Tip:</span>
-                <span>Use username <code className="bg-white/15 px-1 rounded text-white font-mono">admin</code> and password <code className="bg-white/15 px-1 rounded text-white font-mono">admin</code>.</span>
-              </div>
 
               <button
                 type="submit"
