@@ -11,45 +11,43 @@ FleetDash is a modern **MERN Stack** application built to simplify fleet operati
 ## 📸 Preview 
 
 
-### 🚀 Landing Page
+## 🚀 Landing Page
 
-> A modern landing page introducing the FleetDash platform.
+A modern landing page introducing the FleetDash platform.
 
-![Landing Page](images/Screenshot 2026-07-28 215201.png)
-
----
-
-### 🔐 Admin Authentication
-
-> Secure administrator login with JWT-based authentication.
-
-![Admin Login](images/Screenshot 2026-07-28 213837.png)
+![Landing Page](images/Screenshot%202026-07-28%20215201.png)
 
 ---
 
-### 📊 Fleet Dashboard
+## 🔐 Admin Authentication
 
-> Interactive dashboard displaying fleet statistics, live map, and operational insights.
+Secure administrator login with JWT-based authentication.
 
-![Dashboard](images/Screenshot 2026-07-28 215042.png)
-
----
-
-### 📍 Live Fleet Tracking
-
-> Monitor vehicle locations on an interactive map with real-time-ready architecture.
-
-![Live Fleet](images/Screenshot 2026-07-28 215115.png)
+![Admin Login](images/Screenshot%202026-07-28%20213837.png)
 
 ---
 
-### 🗺️ Geofence Management
+## 📊 Geofence Management
 
-> Create and manage virtual boundaries while monitoring vehicle activity inside geofences.
+Create, monitor, and manage virtual boundaries with an interactive map and detailed zone information.
 
-![Geofence](images/Screenshot 2026-07-28 221646.png)
+![Geofence Management](images/Screenshot%202026-07-28%20215141.png)
 
 ---
+
+## 🛰️ Live Fleet Tracking
+
+Monitor vehicle locations, status, fuel levels, and telemetry in real time.
+
+![Live Fleet](images/Screenshot%202026-07-28%20215115.png)
+
+---
+
+## 🌍 Geofence Visualization
+
+Interactive geofence polygons with vehicle positioning and zone details.
+
+![Geofence Visualization](images/Screenshot%202026-07-28%20221646.png)
 
 # ✨ Features
 
