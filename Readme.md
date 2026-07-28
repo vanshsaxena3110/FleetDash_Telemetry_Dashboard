@@ -1,4 +1,4 @@
- 🚛 FleetDash
+                                                  FleetDash
 
 ### Smart Fleet Management & Telemetry Dashboard
 
@@ -15,7 +15,7 @@ FleetDash is a modern **MERN Stack** application built to simplify fleet operati
 
 > A modern landing page introducing the FleetDash platform.
 
-![Landing Page](images/landing-page.png)
+![Landing Page](images/Screenshot 2026-07-28 215201.png)
 
 ---
 
@@ -23,7 +23,7 @@ FleetDash is a modern **MERN Stack** application built to simplify fleet operati
 
 > Secure administrator login with JWT-based authentication.
 
-![Admin Login](images/login.png)
+![Admin Login](images/Screenshot 2026-07-28 213837.png)
 
 ---
 
@@ -31,7 +31,7 @@ FleetDash is a modern **MERN Stack** application built to simplify fleet operati
 
 > Interactive dashboard displaying fleet statistics, live map, and operational insights.
 
-![Dashboard](images/dashboard.png)
+![Dashboard](images/Screenshot 2026-07-28 215042.png)
 
 ---
 
@@ -39,7 +39,7 @@ FleetDash is a modern **MERN Stack** application built to simplify fleet operati
 
 > Monitor vehicle locations on an interactive map with real-time-ready architecture.
 
-![Live Fleet](images/live-map.png)
+![Live Fleet](images/Screenshot 2026-07-28 215115.png)
 
 ---
 
@@ -47,7 +47,7 @@ FleetDash is a modern **MERN Stack** application built to simplify fleet operati
 
 > Create and manage virtual boundaries while monitoring vehicle activity inside geofences.
 
-![Geofence](images/geofence.png)
+![Geofence](images/Screenshot 2026-07-28 221646.png)
 
 ---
 
@@ -169,6 +169,29 @@ FleetDash
 │
 └── README.md
 ```
+
+---
+
+
+# 📈 Development Journey
+
+### Week 1 – Frontend Development
+
+- Designed a responsive landing page and admin dashboard.
+- Built reusable React components for a modular UI.
+- Developed Dashboard, Live Fleet, Analytics, Alerts, and Geofence pages.
+- Integrated interactive Leaflet maps for vehicle visualization.
+- Implemented dark and light themes.
+- Focused on creating a clean, responsive, and user-friendly interface.
+
+### Week 2 – Backend Development
+
+- Set up the Node.js and Express backend architecture.
+- Connected the application with MongoDB using Mongoose.
+- Implemented JWT-based authentication and protected routes.
+- Developed REST APIs for Vehicles, Geofences, Alerts, Dashboard, and Telemetry.
+- Tested APIs using Thunder Client.
+- Prepared the backend for frontend integration and future real-time capabilities.
 
 ---
 
@@ -310,27 +333,6 @@ NODE_ENV=development
 
 ---
 
-# 📈 Development Journey
-
-### Week 1 – Frontend Development
-
-- Designed a responsive landing page and admin dashboard.
-- Built reusable React components for a modular UI.
-- Developed Dashboard, Live Fleet, Analytics, Alerts, and Geofence pages.
-- Integrated interactive Leaflet maps for vehicle visualization.
-- Implemented dark and light themes.
-- Focused on creating a clean, responsive, and user-friendly interface.
-
-### Week 2 – Backend Development
-
-- Set up the Node.js and Express backend architecture.
-- Connected the application with MongoDB using Mongoose.
-- Implemented JWT-based authentication and protected routes.
-- Developed REST APIs for Vehicles, Geofences, Alerts, Dashboard, and Telemetry.
-- Tested APIs using Thunder Client.
-- Prepared the backend for frontend integration and future real-time capabilities.
-
----
 
 # 🔮 Future Improvements
 
