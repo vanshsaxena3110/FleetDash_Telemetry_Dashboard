@@ -8,7 +8,7 @@ FleetDash is a modern **MERN Stack** application built to simplify fleet operati
 
 ---
 
-## 📸 Preview  ![Uploading Screenshot 2026-07-28 215201.png…]()
+## 📸 Preview 
 
 
 ### 🚀 Landing Page
@@ -354,10 +354,5 @@ B.Tech CSE • MERN Stack Developer
 
 ---
 
-<div align="center">
-
-### ⭐ If you found this project helpful, consider giving it a star!
-
-Made with ❤️ using the MERN Stack.
 
 </div>
