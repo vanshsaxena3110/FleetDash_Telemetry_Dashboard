@@ -98,7 +98,7 @@ export const addTelemetry = async (req, res) => {
 
     // Check thresholds for auto alert generation
     if (speed > 90) {
-      await Alert.create({
+      const speedAlert = await Alert.create({
         title: "Speeding Warning",
         description: `Vehicle ${vehicle.vehicleNumber} exceeded speed limit at ${speed} km/h`,
         vehicle: vehicle._id,
@@ -107,10 +107,15 @@ export const addTelemetry = async (req, res) => {
         location: { latitude, longitude },
         createdBy: req.user._id,
       });
+      try {
+        getIO().emit("new_alert", speedAlert);
+      } catch (e) {
+        console.warn("Socket alert emission warning:", e.message);
+      }
     }
 
     if (temperature && temperature > 90) {
-      await Alert.create({
+      const tempAlert = await Alert.create({
         title: "High Engine Temperature",
         description: `Vehicle ${vehicle.vehicleNumber} engine temperature high at ${temperature}°C`,
         vehicle: vehicle._id,
@@ -119,10 +124,15 @@ export const addTelemetry = async (req, res) => {
         location: { latitude, longitude },
         createdBy: req.user._id,
       });
+      try {
+        getIO().emit("new_alert", tempAlert);
+      } catch (e) {
+        console.warn("Socket alert emission warning:", e.message);
+      }
     }
 
     if (fuel !== null && fuel < 15) {
-      await Alert.create({
+      const fuelAlert = await Alert.create({
         title: "Low Fuel Alert",
         description: `Vehicle ${vehicle.vehicleNumber} fuel level is low (${fuel}%)`,
         vehicle: vehicle._id,
@@ -131,6 +141,11 @@ export const addTelemetry = async (req, res) => {
         location: { latitude, longitude },
         createdBy: req.user._id,
       });
+      try {
+        getIO().emit("new_alert", fuelAlert);
+      } catch (e) {
+        console.warn("Socket alert emission warning:", e.message);
+      }
     }
 
     return res.status(201).json({
