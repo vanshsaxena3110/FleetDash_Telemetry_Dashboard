@@ -4,11 +4,7 @@ import Vehicle from "../models/Vehicle.js";
 import Alert from "../models/Alert.js";
 import { getIO } from "../sockets/socket.js";
 
-/**
- * @desc    Record new telemetry entry & update vehicle status/location
- * @route   POST /api/telemetry/add
- * @access  Private
- */
+
 export const addTelemetry = async (req, res) => {
   try {
     const {
@@ -164,11 +160,7 @@ export const addTelemetry = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get historical telemetry logs for a vehicle
- * @route   GET /api/telemetry/vehicle/:vehicleId
- * @access  Private
- */
+
 export const getVehicleTelemetry = async (req, res) => {
   try {
     const { vehicleId } = req.params;
@@ -194,11 +186,7 @@ export const getVehicleTelemetry = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get latest single telemetry entry for a vehicle
- * @route   GET /api/telemetry/vehicle/:vehicleId/latest
- * @access  Private
- */
+
 export const getLatestTelemetry = async (req, res) => {
   try {
     const { vehicleId } = req.params;
