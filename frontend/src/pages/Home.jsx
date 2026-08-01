@@ -25,23 +25,35 @@ const TECH_STACK = [
   { name: 'Tailwind CSS', role: 'Styling Engine', color: '#06B6D4' }
 ]
 
+import { loginApi, registerApi } from '../services/api.js'
+
 // Duplicate list for seamless 300% infinite marquee loop
 const DUP_TECH_STACK = [...TECH_STACK, ...TECH_STACK, ...TECH_STACK]
 
 export default function Home({ onLoginSuccess }) {
   const [showLoginModal, setShowLoginModal] = React.useState(false)
+  const [isRegisterMode, setIsRegisterMode] = React.useState(false)
   const [Username, setUsername] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [isLoading, setIsLoading] = React.useState(false)
   const [error, setError] = React.useState('')
 
-  const handleLogin = (e) => {
+  const handleAuth = async (e) => {
     e.preventDefault()
     setError('')
     setIsLoading(true)
 
-    setTimeout(() => {
-      if (Username === 'vansh' && password === 'vansh1234') {
+    try {
+      let data
+      if (isRegisterMode) {
+        data = await registerApi({ Username: Username.trim(), password })
+      } else {
+        data = await loginApi({ Username: Username.trim(), password })
+      }
+
+      if (data.token) {
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('user', JSON.stringify(data.user || {}))
         setIsLoading(false)
         setShowLoginModal(false)
         if (onLoginSuccess) {
@@ -49,9 +61,13 @@ export default function Home({ onLoginSuccess }) {
         }
       } else {
         setIsLoading(false)
-        setError('Invalid admin credentials. Please try again.')
+        setError('Authentication failed. Please try again.')
       }
-    }, 1000)
+    } catch (err) {
+      setIsLoading(false)
+      const msg = err.response?.data?.message || err.message || 'Server error during authentication'
+      setError(msg)
+    }
   }
 
   return (
@@ -300,13 +316,17 @@ export default function Home({ onLoginSuccess }) {
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#635bff] text-white border border-white/20 shadow-lg">
                 <ShieldAlert className="h-6 w-6" />
               </div>
-              <h2 className="text-xl font-black text-white">Admin Sign In</h2>
+              <h2 className="text-xl font-black text-white">
+                {isRegisterMode ? 'Create FleetDash Account' : 'Admin Sign In'}
+              </h2>
               <p className="text-xs text-white/70 max-w-xs">
-                Access the FleetDash system to monitor vehicles, alerts, analytics, and geofences.
+                {isRegisterMode
+                  ? 'Register a new admin user to access FleetDash.'
+                  : 'Access the FleetDash system to monitor vehicles, alerts, analytics, and geofences.'}
               </p>
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-4 text-left">
+            <form onSubmit={handleAuth} className="space-y-4 text-left">
               <div>
                 <label className="block text-xs font-bold text-white/80 uppercase tracking-wider mb-1.5">
                   Username
@@ -349,9 +369,22 @@ export default function Home({ onLoginSuccess }) {
                 {isLoading ? (
                   <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                 ) : (
-                  <span>Login as Admin</span>
+                  <span>{isRegisterMode ? 'Register Account' : 'Login as Admin'}</span>
                 )}
               </button>
+
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsRegisterMode(!isRegisterMode)
+                    setError('')
+                  }}
+                  className="text-xs text-white/70 hover:text-white underline cursor-pointer"
+                >
+                  {isRegisterMode ? 'Already have an account? Sign In' : "Don't have an account? Register"}
+                </button>
+              </div>
             </form>
           </div>
         </div>
