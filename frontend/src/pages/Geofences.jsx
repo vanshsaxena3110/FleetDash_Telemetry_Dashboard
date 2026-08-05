@@ -53,14 +53,44 @@ export default function Geofences({ isDarkMode = false }) {
     }
   ])
 
-  // Mock vehicles displayed on the geofence map in Agra-Mathura area
-  const geofenceVehicles = [
-    { id: 'TRK-22AB', driver: 'Rahul Sharma', speed: '62 km/h', lat: 27.435, lng: 77.632, status: 'Moving', color: 'green' },
-    { id: 'TRK-05DE', driver: 'Amit Verma', speed: '72 km/h', lat: 27.221, lng: 77.948, status: 'Moving', color: 'green' },
+  // Initial vehicles displayed on the geofence map in Agra-Mathura area
+  const initialGeofenceVehicles = [
+    { id: 'WH-01', driver: 'Rahul Sharma', speed: '45 km/h', lat: 27.496, lng: 77.685, status: 'Moving', color: 'green' },
+    { id: 'WH-02', driver: 'Amit Verma', speed: '40 km/h', lat: 27.500, lng: 77.688, status: 'Moving', color: 'green' },
     { id: 'TRK-10FG', driver: 'Vikram Patel', speed: '0 km/h', lat: 27.315, lng: 77.820, status: 'Idle', color: 'yellow' },
     { id: 'TRK-11HI', driver: 'Sandeep Singh', speed: '0 km/h', lat: 27.162, lng: 77.995, status: 'Offline', color: 'red' },
     { id: 'TRK-09AB', driver: 'Rohit Sharma', speed: '60 km/h', lat: 27.228, lng: 77.958, status: 'Moving', color: 'green' }
   ]
+
+  const [geofenceVehicles, setGeofenceVehicles] = React.useState(initialGeofenceVehicles)
+
+  const moveVehicleOutward = (vehicle, center) => {
+    const lat = vehicle.lat
+    const lng = vehicle.lng
+    const dy = lat - center[0]
+    const dx = lng - center[1]
+    const distance = Math.sqrt(dy * dy + dx * dx)
+    const step = 0.0045
+    const factor = distance > 0 ? step / distance : step
+
+    return {
+      ...vehicle,
+      lat: lat + dy * factor,
+      lng: lng + dx * factor,
+      speed: `${Math.max(35, Math.min(70, Number(vehicle.speed.replace(' km/h', '')) + Math.round((Math.random() - 0.5) * 4)))} km/h`,
+    }
+  }
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setGeofenceVehicles((prev) => prev.map((vehicle) => {
+        if (vehicle.id !== 'WH-01' && vehicle.id !== 'WH-02') return vehicle
+        return moveVehicleOutward(vehicle, [27.498, 77.685])
+      }))
+    }, 1500)
+
+    return () => clearInterval(interval)
+  }, [])
 
   const [selectedGeofence, setSelectedGeofence] = React.useState(geofences[2]) // Default select Distribution Center
   const [searchVal, setSearchVal] = React.useState('')
@@ -119,7 +149,7 @@ export default function Geofences({ isDarkMode = false }) {
   }
 
   return (
-    <div className="flex-grow overflow-y-auto p-6 md:p-8 flex flex-col gap-6 text-left bg-transparent">
+    <div className="grow overflow-y-auto p-6 md:p-8 flex flex-col gap-6 text-left bg-transparent">
       {/* Fallback Leaflet CDN CSS to resolve local bundler loading errors */}
       <link 
         rel="stylesheet" 

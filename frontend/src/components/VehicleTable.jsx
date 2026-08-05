@@ -15,6 +15,9 @@ export default function VehicleTable({
   vehicles, 
   activeVehicleId, 
   onSelectVehicle, 
+  onDelete,
+  onEdit,
+  onRefresh,
   isDarkMode = false 
 }) {
   const [search, setSearch] = React.useState('')
@@ -35,10 +38,10 @@ export default function VehicleTable({
   const filteredVehicles = vehicles.filter(v => {
     const normStatus = getNormalizedStatus(v.status)
     const matchesSearch = 
-      v.id.toLowerCase().includes(search.toLowerCase()) || 
+      (v.id || '').toLowerCase().includes(search.toLowerCase()) || 
       (v.regNo || '').toLowerCase().includes(search.toLowerCase()) ||
-      v.name.toLowerCase().includes(search.toLowerCase()) || 
-      v.driver.toLowerCase().includes(search.toLowerCase())
+      (v.name || '').toLowerCase().includes(search.toLowerCase()) || 
+      (v.driver || '').toLowerCase().includes(search.toLowerCase())
 
     let matchesStatus = true
     if (statusFilter !== 'all') {
@@ -146,7 +149,7 @@ export default function VehicleTable({
             </button>
           </div>
 
-          <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-800 hidden md:block"></div>
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 hidden md:block"></div>
 
           {/* Vehicle Type filters */}
           <div className="flex flex-wrap items-center gap-1.5 select-none">
@@ -206,7 +209,7 @@ export default function VehicleTable({
         {/* Refresh & CSV Operations */}
         <div className="flex items-center justify-end gap-3">
           <button 
-            onClick={() => {}}
+            onClick={() => onRefresh && onRefresh()}
             className={`flex items-center gap-1.5 text-xs font-bold border rounded-lg px-3 py-1.5 cursor-pointer shadow-sm transition-all ${
               isDarkMode 
                 ? 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-850' 
@@ -321,7 +324,7 @@ export default function VehicleTable({
                       <td className="px-4 py-3.5 font-bold">{v.speed ? `${v.speed} km/h` : '62 km/h'}</td>
                       
                       {/* 8. Fuel Level */}
-                      <td className="px-4 py-3.5 min-w-[90px]">
+                      <td className="px-4 py-3.5 min-w-22.5">
                         <div className="flex items-center gap-2">
                           <div className={`w-12 h-1.5 rounded-full overflow-hidden ${
                             isDarkMode ? 'bg-slate-950' : 'bg-slate-100'
@@ -340,10 +343,10 @@ export default function VehicleTable({
                       {/* 9. GPS Signal */}
                       <td className="px-4 py-3.5">
                         <div className="flex items-end gap-0.5 h-3">
-                          <div className="w-[3px] h-1.5 bg-emerald-500 rounded-sm"></div>
-                          <div className="w-[3px] h-2 bg-emerald-500 rounded-sm"></div>
-                          <div className="w-[3px] h-2.5 bg-emerald-500 rounded-sm"></div>
-                          <div className="w-[3px] h-3 bg-emerald-500 rounded-sm"></div>
+                          <div className="w-0.75 h-1.5 bg-emerald-500 rounded-sm"></div>
+                          <div className="w-0.75 h-2 bg-emerald-500 rounded-sm"></div>
+                          <div className="w-0.75 h-2.5 bg-emerald-500 rounded-sm"></div>
+                          <div className="w-0.75 h-3 bg-emerald-500 rounded-sm"></div>
                         </div>
                       </td>
                       
@@ -357,17 +360,23 @@ export default function VehicleTable({
                         <div className="flex items-center justify-center gap-1.5">
                           <button 
                             onClick={() => onSelectVehicle && onSelectVehicle(v)}
+                            title="View Details"
                             className="p-1 rounded border border-emerald-200 bg-emerald-50/50 text-emerald-600 hover:bg-emerald-500 hover:text-white cursor-pointer transition-colors"
                           >
                             <Info className="h-3 w-3" />
                           </button>
-                          <button className="p-1 rounded border border-slate-200 hover:bg-slate-100 cursor-pointer text-slate-500 transition-colors">
-                            <MapPin className="h-3 w-3" />
-                          </button>
-                          <button className="p-1 rounded border border-slate-200 hover:bg-slate-100 cursor-pointer text-slate-500 transition-colors">
+                          <button 
+                            onClick={() => onEdit && onEdit(v)}
+                            title="Edit Vehicle"
+                            className="p-1 rounded border border-slate-200 hover:bg-slate-100 cursor-pointer text-slate-500 transition-colors"
+                          >
                             <Edit2 className="h-3 w-3" />
                           </button>
-                          <button className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer transition-colors">
+                          <button 
+                            onClick={() => onDelete && onDelete(v.id)}
+                            title="Delete Vehicle"
+                            className="p-1 rounded border border-rose-200 bg-rose-50/50 text-rose-500 hover:bg-rose-500 hover:text-white cursor-pointer transition-colors"
+                          >
                             <MoreVertical className="h-3.5 w-3.5" />
                           </button>
                         </div>

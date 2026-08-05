@@ -12,6 +12,7 @@ import dashboardRoutes from "./src/routes/dashboard.routes.js";
 import alertRoutes from "./src/routes/alert.routes.js";
 import telemetryRoutes from "./src/routes/telemetry.routes.js";
 import analyticsRoutes from "./src/routes/analytics.routes.js";
+import { startVehicleMovementSimulation } from "./src/sockets/vehicleSimulator.js";
 
 dotenv.config();
 const PORT = process.env.PORT || 8080;
@@ -37,6 +38,7 @@ app.get("/", (req, res) => {
 // Attach Express app to HTTP server & Socket.io instance
 const server = http.createServer(app);
 initSocket(server);
+startVehicleMovementSimulation();
 
 server.listen(PORT, () => {
   console.log(`Server & Socket.io running on port ${PORT}`);

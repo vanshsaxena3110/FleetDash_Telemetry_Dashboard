@@ -137,15 +137,15 @@ export default function Home({ onLoginSuccess }) {
 
           <div className="relative w-full overflow-hidden py-2">
             {/* Left/Right Fade Out Filters */}
-            <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-[#635bff] to-transparent z-10 pointer-events-none"></div>
-            <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-[#635bff] to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute inset-y-0 left-0 w-20 bg-linear-to-r from-[#635bff] to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute inset-y-0 right-0 w-20 bg-linear-to-l from-[#635bff] to-transparent z-10 pointer-events-none"></div>
 
             {/* Marquee Track */}
             <div className="flex w-[200%] md:w-[300%] gap-6 animate-marquee-right hover:[animation-play-state:paused] cursor-pointer">
               {DUP_TECH_STACK.map((tech, idx) => (
                 <div
                   key={idx}
-                  className="flex flex-shrink-0 items-center gap-3 rounded-xl border border-white/20 bg-white/10 backdrop-blur-md px-5 py-2.5 text-white hover:bg-white/20 transition-all select-none"
+                  className="flex shrink-0 items-center gap-3 rounded-xl border border-white/20 bg-white/10 backdrop-blur-md px-5 py-2.5 text-white hover:bg-white/20 transition-all select-none"
                 >
                   <div
                     className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/20 font-black text-xs shadow-sm"

@@ -18,6 +18,9 @@ import {
 } from 'lucide-react'
 import { MapContainer, TileLayer, Marker, Popup, Circle, Polygon, useMap } from 'react-leaflet'
 import L from 'leaflet'
+import { fetchVehiclesApi } from '../services/api.js'
+import { connectSocket, onTelemetryUpdate, offSocketEvent } from '../services/socket.js'
+
 
 // A controller component to automatically trigger invalidateSize on MapContainer mount
 function MapResizeController() {
@@ -32,50 +35,132 @@ function MapResizeController() {
 }
 
 
-// Helper to render responsive Lucide vehicle pins inside Leaflet Markers
+// Helper to render a car-shaped vehicle icon in Leaflet
 const customMarkerIcon = (color) => {
-  const colorMap = {
-    green: 'bg-emerald-500 text-white ring-emerald-500/20',
-    yellow: 'bg-yellow-500 text-white ring-yellow-500/20',
-    red: 'bg-rose-500 text-white ring-rose-500/20',
-    slate: 'bg-slate-500 text-white ring-slate-500/20'
-  }
-  const colorClass = colorMap[color] || 'bg-slate-400 text-white'
-  
-  return L.divIcon({
-    html: `
-      <div class="flex flex-col items-center justify-center" style="transform: translate(-2px, -6px);">
-        <div class="rounded-lg border border-white p-1 shadow-md flex items-center justify-center ${colorClass}">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-car"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
-        </div>
-        <div class="h-2 w-2 rounded-full border border-white shadow-sm -mt-0.5 ${color === 'green' ? 'bg-emerald-500' : color === 'yellow' ? 'bg-yellow-500' : 'bg-rose-500'}"></div>
-      </div>
-    `,
-    className: 'custom-leaflet-marker',
-    iconSize: [28, 32],
-    iconAnchor: [14, 32]
+  const fill = color === 'green' ? '#10B981' : color === 'yellow' ? '#F59E0B' : '#EF4444'
+  const svg = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 11h18l-1.5-4.5A1.5 1.5 0 0 0 18 5H6a1.5 1.5 0 0 0-1.5 1.5L3 11Z" fill="${fill}" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 11v5a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h10v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-5" fill="${fill}" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7.5" cy="16" r="1.5" fill="white"/><circle cx="16.5" cy="16" r="1.5" fill="white"/></svg>`
+  const url = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`
+  return L.icon({
+    iconUrl: url,
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+    popupAnchor: [0, -18],
   })
 }
 
 export default function Fleet({ isDarkMode = false }) {
   const [fleetSearchQuery, setFleetSearchQuery] = React.useState('')
   const [fleetStatusFilter, setFleetStatusFilter] = React.useState('all') // 'all', 'moving', 'idle', 'offline'
-  
-  // Live Fleet Vehicles data representing the Agra-Mathura NH-19 corridor
-  const liveFleetVehicles = [
-    { id: 'TRK-09AB-1234', driver: 'Rohit Sharma', speed: '62 km/h', fuel: 68, engine: 'ON', temp: '78°C', location: 'NH-19, Near Sikandra, Agra', time: 'Just now', status: 'Moving', color: 'green', lat: 27.224, lng: 77.955, x: '53%', y: '39%' },
-    { id: 'TRK-07CD-5678', driver: 'Amit Verma', speed: '0 km/h', fuel: 82, engine: 'OFF', temp: '42°C', location: 'Warehouse A, Mathura Bypass', time: '2 min ago', status: 'Idle', color: 'yellow', lat: 27.498, lng: 77.685, x: '37%', y: '39%' },
-    { id: 'TRK-03EF-7890', driver: 'Sandeep Singh', speed: '85 km/h', fuel: 12, engine: 'ON', temp: '94°C', location: 'NH-19, Farah, Mathura-Agra Road', time: '5 min ago', status: 'Moving', color: 'green', lat: 27.321, lng: 77.824, x: '59%', y: '58%' },
-    { id: 'TRK-11GH-9012', driver: 'Manish Yadav', speed: '0 km/h', fuel: 5, engine: 'OFF', temp: '35°C', location: 'Sikandra Crossing, Agra', time: '8 min ago', status: 'Offline', color: 'red', lat: 27.221, lng: 77.960, x: '46%', y: '52%' },
-    { id: 'TRK-05IJ-3456', driver: 'Vikram Patel', speed: '0 km/h', fuel: 45, engine: 'OFF', temp: '38°C', location: 'Refinery Area, Mathura', time: '12 min ago', status: 'Idle', color: 'yellow', lat: 27.472, lng: 77.712, x: '31%', y: '50%' },
-    { id: 'TRK-12KL-7890', driver: 'Rahul Sharma', speed: '70 km/h', fuel: 90, engine: 'ON', temp: '82°C', location: 'Yamuna Expressway Toll, Agra', time: 'Just now', status: 'Moving', color: 'green', lat: 27.288, lng: 77.856, x: '28%', y: '27%' },
-    { id: 'TRK-15MN-1234', driver: 'Pankaj Kumar', speed: '0 km/h', fuel: 0, engine: 'OFF', temp: '25°C', location: 'Rohta Bypass, Agra', time: '25 min ago', status: 'Offline', color: 'red', lat: 27.165, lng: 77.990, x: '64%', y: '27%' },
-    { id: 'TRK-08XY-9012', driver: 'Vijay Yadav', speed: '0 km/h', fuel: 19, engine: 'OFF', temp: '33°C', location: 'Mathura Cantonment', time: '18 min ago', status: 'Idle', color: 'yellow', lat: 27.485, lng: 77.698, x: '26%', y: '67%' },
-    { id: 'TRK-10ZW-3456', driver: 'Deepak Singh', speed: '55 km/h', fuel: 74, engine: 'ON', temp: '75°C', location: 'NH-19, Mathura-Agra Corridor', time: '4 min ago', status: 'Moving', color: 'green', lat: 27.382, lng: 77.785, x: '68%', y: '63%' },
-    { id: 'TRK-06UV-7890', driver: 'Rakesh Verma', speed: '0 km/h', fuel: 88, engine: 'OFF', temp: '29°C', location: 'Fatehabad Road, Agra', time: '40 min ago', status: 'Offline', color: 'slate', lat: 27.152, lng: 78.020, x: '80%', y: '38%' }
-  ]
+  const [liveFleetVehicles, setLiveFleetVehicles] = React.useState([])
+  const [selectedVehicle, setSelectedVehicle] = React.useState(null)
+  const [mapCenter, setMapCenter] = React.useState([27.35, 77.85])
 
-  const [selectedVehicle, setSelectedVehicle] = React.useState(liveFleetVehicles[0])
+  const rebuildFleetState = (serverVehicles) => {
+    return serverVehicles.map((v) => {
+      const latitude = v.currentLocation?.latitude ?? v.latitude
+      const longitude = v.currentLocation?.longitude ?? v.longitude
+      const status = v.status === 'moving' ? 'Moving' : v.status === 'idle' ? 'Idle' : 'Offline'
+
+      return {
+        id: v.id,
+        vehicleNumber: v.vehicleNumber || v.regNo || v.id,
+        driver: v.driver || v.driverName || `Driver ${v.vehicleNumber || v.regNo || v.id}`,
+        speed: `${v.latestTelemetry?.speed ?? v.speed ?? 0} km/h`,
+        fuel: v.latestTelemetry?.fuel ?? v.fuel ?? 0,
+        engine: (v.latestTelemetry?.engineStatus ?? v.engineStatus) === 'on' ? 'ON' : 'OFF',
+        temp: v.latestTelemetry?.temperature != null
+          ? `${v.latestTelemetry.temperature}°C`
+          : v.temp != null
+            ? `${v.temp}°C`
+            : '—',
+        location: latitude != null && longitude != null
+          ? `${Number(latitude).toFixed(4)}, ${Number(longitude).toFixed(4)}`
+          : 'No GPS data',
+        time: v.currentLocation?.updatedAt
+          ? new Date(v.currentLocation.updatedAt).toLocaleTimeString()
+          : 'Just now',
+        status,
+        color: status === 'Moving' ? 'green' : status === 'Idle' ? 'yellow' : 'red',
+        lat: latitude ?? 27.35,
+        lng: longitude ?? 77.85,
+      }
+    })
+  }
+
+  React.useEffect(() => {
+    const loadVehicles = async () => {
+      try {
+        const response = await fetchVehiclesApi()
+        const list = Array.isArray(response) ? response : response.vehicles || []
+        const formatted = rebuildFleetState(list)
+        setLiveFleetVehicles(formatted)
+        setSelectedVehicle(formatted[0] ?? null)
+        if (formatted.length && formatted[0].lat && formatted[0].lng) {
+          setMapCenter([formatted[0].lat, formatted[0].lng])
+        }
+      } catch (err) {
+        console.warn('Failed to load fleet vehicles:', err.message || err)
+      }
+    }
+
+    loadVehicles()
+
+    const socket = connectSocket()
+    const handleTelemetry = ({ vehicle }) => {
+      if (!vehicle) return
+      setLiveFleetVehicles((prev) => {
+        const updated = prev.map((item) => {
+          if (String(item.id) !== String(vehicle.id)) return item
+          return {
+            id: vehicle.id,
+            driver: item.driver,
+            speed: `${vehicle.latestTelemetry?.speed ?? 0} km/h`,
+            fuel: vehicle.latestTelemetry?.fuel ?? 0,
+            engine: vehicle.latestTelemetry?.engineStatus === 'on' ? 'ON' : 'OFF',
+            temp: vehicle.latestTelemetry?.temperature != null ? `${vehicle.latestTelemetry.temperature}°C` : '—',
+            location: vehicle.currentLocation?.latitude && vehicle.currentLocation?.longitude
+              ? `${Number(vehicle.currentLocation.latitude).toFixed(4)}, ${Number(vehicle.currentLocation.longitude).toFixed(4)}`
+              : item.location,
+            time: vehicle.currentLocation?.updatedAt ? new Date(vehicle.currentLocation.updatedAt).toLocaleTimeString() : 'Just now',
+            status: vehicle.status === 'moving' ? 'Moving' : vehicle.status === 'idle' ? 'Idle' : 'Offline',
+            color: vehicle.status === 'moving' ? 'green' : vehicle.status === 'idle' ? 'yellow' : 'red',
+            lat: vehicle.currentLocation?.latitude ?? item.lat,
+            lng: vehicle.currentLocation?.longitude ?? item.lng,
+          }
+        })
+
+        const found = updated.some((item) => String(item.id) === String(vehicle.id))
+        if (!found) {
+          return [...updated, {
+            id: vehicle.id,
+            driver: `Driver ${vehicle.vehicleNumber}`,
+            speed: `${vehicle.latestTelemetry?.speed ?? 0} km/h`,
+            fuel: vehicle.latestTelemetry?.fuel ?? 0,
+            engine: vehicle.latestTelemetry?.engineStatus === 'on' ? 'ON' : 'OFF',
+            temp: vehicle.latestTelemetry?.temperature != null ? `${vehicle.latestTelemetry.temperature}°C` : '—',
+            location: vehicle.currentLocation?.latitude && vehicle.currentLocation?.longitude
+              ? `${Number(vehicle.currentLocation.latitude).toFixed(4)}, ${Number(vehicle.currentLocation.longitude).toFixed(4)}`
+              : 'No GPS data',
+            time: vehicle.currentLocation?.updatedAt ? new Date(vehicle.currentLocation.updatedAt).toLocaleTimeString() : 'Just now',
+            status: vehicle.status === 'moving' ? 'Moving' : vehicle.status === 'idle' ? 'Idle' : 'Offline',
+            color: vehicle.status === 'moving' ? 'green' : vehicle.status === 'idle' ? 'yellow' : 'red',
+            lat: vehicle.currentLocation?.latitude ?? 27.35,
+            lng: vehicle.currentLocation?.longitude ?? 77.85,
+          }]
+        }
+        return updated
+      })
+    }
+
+    onTelemetryUpdate(handleTelemetry)
+
+    return () => {
+      offSocketEvent('telemetry_update', handleTelemetry)
+      if (socket) {
+        socket.disconnect()
+      }
+    }
+  }, [])
 
   // Filter vehicles
   const filteredVehicles = liveFleetVehicles.filter(v => {
@@ -85,13 +170,13 @@ export default function Fleet({ isDarkMode = false }) {
     let matchesStatus = true
     if (fleetStatusFilter === 'moving') matchesStatus = v.status === 'Moving'
     else if (fleetStatusFilter === 'idle') matchesStatus = v.status === 'Idle'
-    else if (fleetStatusFilter === 'offline') matchesStatus = v.status === 'Offline' || v.status === 'Stopped'
+    else if (fleetStatusFilter === 'offline') matchesStatus = v.status === 'Offline'
 
     return matchesSearch && matchesStatus
   })
 
   return (
-    <div className="flex-grow overflow-y-auto p-6 md:p-8 flex flex-col gap-6 text-left bg-transparent">
+    <div className="grow overflow-y-auto p-6 md:p-8 flex flex-col gap-6 text-left bg-transparent">
       {/* Fallback Leaflet CDN CSS to resolve local bundler loading errors */}
       <link 
         rel="stylesheet" 
@@ -214,7 +299,7 @@ export default function Fleet({ isDarkMode = false }) {
         <div className={`lg:col-span-7 border rounded-xl p-4 shadow-sm transition-colors duration-300 ${
           isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white/80 backdrop-blur-md border-slate-200/80'
         }`}>
-          <div className="h-[480px] rounded-lg border border-slate-200 overflow-hidden relative" style={{ zIndex: 1 }}>
+          <div className="h-120 rounded-lg border border-slate-200 overflow-hidden relative" style={{ zIndex: 1 }}>
             <style>{`
               .leaflet-container img {
                 max-width: none !important;
@@ -226,7 +311,7 @@ export default function Fleet({ isDarkMode = false }) {
               }
             `}</style>
             <MapContainer 
-              center={[27.35, 77.85]} 
+              center={mapCenter} 
               zoom={10.5} 
               className="h-full w-full"
             >
@@ -507,7 +592,7 @@ export default function Fleet({ isDarkMode = false }) {
             <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-2 text-emerald-600 shrink-0">
               <Car className="h-4.5 w-4.5" />
             </div>
-            <div className="leading-tight flex-grow min-w-0">
+            <div className="leading-tgrow min-w-0">
               <div className="flex justify-between items-baseline gap-2">
                 <p className={`text-[10px] font-black ${isDarkMode ? 'text-slate-205' : 'text-slate-800'}`}>TRK-09AB-1234</p>
                 <span className="text-[7.5px] font-bold text-slate-400">Just now</span>
@@ -524,7 +609,7 @@ export default function Fleet({ isDarkMode = false }) {
             <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-2 text-emerald-600 shrink-0">
               <MapPin className="h-4.5 w-4.5" />
             </div>
-            <div className="leading-tight flex-grow min-w-0">
+            <div className="leading-tight grow min-w-0">
               <div className="flex justify-between items-baseline gap-2">
                 <p className={`text-[10px] font-black ${isDarkMode ? 'text-slate-205' : 'text-slate-800'}`}>TRK-07CD-5678</p>
                 <span className="text-[7.5px] font-bold text-slate-400">2 min ago</span>
@@ -541,7 +626,7 @@ export default function Fleet({ isDarkMode = false }) {
             <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-2 text-emerald-600 shrink-0">
               <Gauge className="h-4.5 w-4.5" />
             </div>
-            <div className="leading-tight flex-grow min-w-0">
+            <div className="leading-tight grow min-w-0">
               <div className="flex justify-between items-baseline gap-2">
                 <p className={`text-[10px] font-black ${isDarkMode ? 'text-slate-205' : 'text-slate-800'}`}>TRK-03EF-7890</p>
                 <span className="text-[7.5px] font-bold text-slate-400">5 min ago</span>
@@ -561,7 +646,7 @@ export default function Fleet({ isDarkMode = false }) {
             <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-2 text-emerald-600 shrink-0">
               <SlidersHorizontal className="h-4.5 w-4.5" />
             </div>
-            <div className="leading-tight flex-grow min-w-0">
+            <div className="leading-tight grow min-w-0">
               <div className="flex justify-between items-baseline gap-2">
                 <p className={`text-[10px] font-black ${isDarkMode ? 'text-slate-205' : 'text-slate-800'}`}>TRK-11GH-9012</p>
                 <span className="text-[7.5px] font-bold text-slate-400">8 min ago</span>

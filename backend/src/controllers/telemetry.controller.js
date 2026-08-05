@@ -4,6 +4,139 @@ import Vehicle from "../models/Vehicle.js";
 import Alert from "../models/Alert.js";
 import { getIO } from "../sockets/socket.js";
 
+const getVehicleStatus = (speed, engineStatus, overrideStatus) => {
+  if (overrideStatus) return overrideStatus;
+  if (engineStatus === "on") {
+    return speed > 0 ? "moving" : "idle";
+  }
+  return "idle";
+};
+
+const shouldEmitAlert = (previousValue, currentValue, threshold, compareGreater = true) => {
+  if (currentValue == null) return false;
+  if (previousValue == null) return currentValue !== 0;
+  return compareGreater ? previousValue <= threshold && currentValue > threshold : previousValue >= threshold && currentValue < threshold;
+};
+
+export const createTelemetryForVehicle = async ({
+  vehicle,
+  latitude,
+  longitude,
+  speed = 0,
+  fuel = null,
+  engineStatus = "off",
+  temperature = null,
+  voltage = null,
+  distance = 0,
+  createdBy,
+  overrideStatus,
+  emitAlerts = true,
+  emitEvent = true,
+}) => {
+  if (!vehicle) {
+    throw new Error("Vehicle object is required");
+  }
+
+  const previousTelemetry = { ...vehicle.latestTelemetry };
+  const vehicleStatus = getVehicleStatus(speed, engineStatus, overrideStatus);
+
+  const telemetry = await Telemetry.create({
+    vehicle: vehicle._id,
+    latitude,
+    longitude,
+    speed,
+    fuel,
+    engineStatus,
+    temperature,
+    voltage,
+    distance,
+    createdBy,
+  });
+
+  vehicle.currentLocation = {
+    latitude: latitude ?? vehicle.currentLocation?.latitude,
+    longitude: longitude ?? vehicle.currentLocation?.longitude,
+    updatedAt: new Date(),
+  };
+
+  vehicle.latestTelemetry = {
+    speed,
+    fuel,
+    engineStatus,
+    temperature,
+    voltage,
+    distance,
+  };
+
+  vehicle.status = vehicleStatus;
+  await vehicle.save();
+
+  const updatedVehicleData = {
+    id: vehicle._id,
+    vehicleNumber: vehicle.vehicleNumber,
+    status: vehicle.status,
+    currentLocation: vehicle.currentLocation,
+    latestTelemetry: vehicle.latestTelemetry,
+  };
+
+  if (emitEvent) {
+    try {
+      getIO().emit("telemetry_update", {
+        telemetry,
+        vehicle: updatedVehicleData,
+      });
+    } catch (err) {
+      console.warn("Socket broadcast warning:", err.message);
+    }
+  }
+
+  if (emitAlerts) {
+    try {
+      if (shouldEmitAlert(previousTelemetry.speed, speed, 90, true)) {
+        const speedAlert = await Alert.create({
+          title: "Speeding Warning",
+          description: `Vehicle ${vehicle.vehicleNumber} exceeded speed limit at ${speed} km/h`,
+          vehicle: vehicle._id,
+          severity: "critical",
+          type: "speed",
+          location: { latitude, longitude },
+          createdBy,
+        });
+        getIO().emit("new_alert", speedAlert);
+      }
+
+      if (shouldEmitAlert(previousTelemetry.temperature, temperature, 90, true)) {
+        const tempAlert = await Alert.create({
+          title: "High Engine Temperature",
+          description: `Vehicle ${vehicle.vehicleNumber} engine temperature high at ${temperature}°C`,
+          vehicle: vehicle._id,
+          severity: "warning",
+          type: "status",
+          location: { latitude, longitude },
+          createdBy,
+        });
+        getIO().emit("new_alert", tempAlert);
+      }
+
+      if (fuel !== null && shouldEmitAlert(previousTelemetry.fuel, fuel, 15, false)) {
+        const fuelAlert = await Alert.create({
+          title: "Low Fuel Alert",
+          description: `Vehicle ${vehicle.vehicleNumber} fuel level is low (${fuel}%)`,
+          vehicle: vehicle._id,
+          severity: "warning",
+          type: "fuel",
+          location: { latitude, longitude },
+          createdBy,
+        });
+        getIO().emit("new_alert", fuelAlert);
+      }
+    } catch (e) {
+      console.warn("Socket alert emission warning:", e.message);
+    }
+  }
+
+  return { telemetry, vehicle: updatedVehicleData };
+};
 
 export const addTelemetry = async (req, res) => {
   try {
@@ -41,9 +174,8 @@ export const addTelemetry = async (req, res) => {
       vehicleStatus = "idle";
     }
 
-    // Create telemetry record
-    const telemetry = await Telemetry.create({
-      vehicle: vehicle._id,
+    const { telemetry, vehicle: updatedVehicle } = await createTelemetryForVehicle({
+      vehicle,
       latitude,
       longitude,
       speed,
@@ -53,107 +185,15 @@ export const addTelemetry = async (req, res) => {
       voltage,
       distance,
       createdBy: req.user._id,
+      overrideStatus: undefined,
+      emitAlerts: true,
+      emitEvent: true,
     });
-
-    // Update Vehicle latest state
-    vehicle.currentLocation = {
-      latitude: latitude ?? vehicle.currentLocation?.latitude,
-      longitude: longitude ?? vehicle.currentLocation?.longitude,
-      updatedAt: new Date(),
-    };
-
-    vehicle.latestTelemetry = {
-      speed,
-      fuel,
-      engineStatus,
-      temperature,
-      voltage,
-      distance,
-    };
-
-    vehicle.status = vehicleStatus;
-    await vehicle.save();
-
-    const updatedVehicleData = {
-      id: vehicle._id,
-      vehicleNumber: vehicle.vehicleNumber,
-      status: vehicle.status,
-      currentLocation: vehicle.currentLocation,
-      latestTelemetry: vehicle.latestTelemetry,
-    };
-
-    // Emit live telemetry event over socket
-    try {
-      getIO().emit("telemetry_update", {
-        telemetry,
-        vehicle: updatedVehicleData,
-      });
-    } catch (err) {
-      console.warn("Socket broadcast warning:", err.message);
-    }
-
-    // Check thresholds for auto alert generation
-    if (speed > 90) {
-      const speedAlert = await Alert.create({
-        title: "Speeding Warning",
-        description: `Vehicle ${vehicle.vehicleNumber} exceeded speed limit at ${speed} km/h`,
-        vehicle: vehicle._id,
-        severity: "critical",
-        type: "speed",
-        location: { latitude, longitude },
-        createdBy: req.user._id,
-      });
-      try {
-        getIO().emit("new_alert", speedAlert);
-      } catch (e) {
-        console.warn("Socket alert emission warning:", e.message);
-      }
-    }
-
-    if (temperature && temperature > 90) {
-      const tempAlert = await Alert.create({
-        title: "High Engine Temperature",
-        description: `Vehicle ${vehicle.vehicleNumber} engine temperature high at ${temperature}°C`,
-        vehicle: vehicle._id,
-        severity: "warning",
-        type: "status",
-        location: { latitude, longitude },
-        createdBy: req.user._id,
-      });
-      try {
-        getIO().emit("new_alert", tempAlert);
-      } catch (e) {
-        console.warn("Socket alert emission warning:", e.message);
-      }
-    }
-
-    if (fuel !== null && fuel < 15) {
-      const fuelAlert = await Alert.create({
-        title: "Low Fuel Alert",
-        description: `Vehicle ${vehicle.vehicleNumber} fuel level is low (${fuel}%)`,
-        vehicle: vehicle._id,
-        severity: "warning",
-        type: "fuel",
-        location: { latitude, longitude },
-        createdBy: req.user._id,
-      });
-      try {
-        getIO().emit("new_alert", fuelAlert);
-      } catch (e) {
-        console.warn("Socket alert emission warning:", e.message);
-      }
-    }
 
     return res.status(201).json({
       message: "Telemetry recorded successfully",
       telemetry,
-      updatedVehicle: {
-        id: vehicle._id,
-        vehicleNumber: vehicle.vehicleNumber,
-        status: vehicle.status,
-        currentLocation: vehicle.currentLocation,
-        latestTelemetry: vehicle.latestTelemetry,
-      },
+      updatedVehicle,
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
