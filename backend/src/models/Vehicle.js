@@ -24,7 +24,7 @@ const vehicleSchema = new mongoose.Schema(
 
     type: {
       type: String,
-      enum: ["truck", "van", "bike", "car"],
+      enum: ["truck", "van", "bus", "car"],
       default: "truck",
     },
 

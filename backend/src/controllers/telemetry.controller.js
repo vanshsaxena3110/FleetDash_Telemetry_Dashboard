@@ -38,7 +38,8 @@ export const createTelemetryForVehicle = async ({
   }
 
   const previousTelemetry = { ...vehicle.latestTelemetry };
-  const vehicleStatus = getVehicleStatus(speed, engineStatus, overrideStatus);
+  const vehicleStatus =
+  overrideStatus || vehicle.status;
 
   const telemetry = await Telemetry.create({
     vehicle: vehicle._id,
@@ -167,12 +168,7 @@ export const addTelemetry = async (req, res) => {
     }
 
     // Determine operational status based on speed & engine status
-    let vehicleStatus = "offline";
-    if (engineStatus === "on") {
-      vehicleStatus = speed > 0 ? "moving" : "idle";
-    } else {
-      vehicleStatus = "idle";
-    }
+  
 
     const { telemetry, vehicle: updatedVehicle } = await createTelemetryForVehicle({
       vehicle,

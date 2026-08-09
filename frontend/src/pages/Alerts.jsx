@@ -1,138 +1,110 @@
 import React from 'react'
 import { Search } from 'lucide-react'
+import { fetchAlertsApi, resolveAlertApi } from '../services/api.js'
+import { connectSocket, offSocketEvent } from '../services/socket.js'
 import AlertCards from '../components/AlertCards.jsx'
 import AlertTable from '../components/AlertTable.jsx'
 import AlertDetailsDrawer from '../components/AlertDetailsDrawer.jsx'
 
 export default function Alerts({ isDarkMode = false }) {
-  // Pre-configured alerts matching the screenshot details
-  const [alerts, setAlerts] = React.useState([
-    {
-      id: 'a1',
-      time: '09:06:23 PM',
-      vehicleId: 'TRK-09AB',
-      driver: 'Rohit Sharma',
-      alertType: 'Speeding',
-      severity: 'Critical',
-      status: 'Critical',
-      speed: '95 km/h',
-      location: 'Agra',
-      description: 'Description: Harsh Braking is barding. Geofence soelemetrnably speed of highers 95 km/h.'
-    },
-    {
-      id: 'a2',
-      time: '09:06:23 PM',
-      vehicleId: 'TRK-07CD',
-      driver: 'Rohit Sharma',
-      alertType: 'Harsh Braking',
-      severity: 'Critical',
-      status: 'resolved',
-      speed: '62 km/h',
-      location: 'Mathura',
-      description: 'Harsh Braking detected. Speed deceleration exceeded threshold on NH-19.'
-    },
-    {
-      id: 'a3',
-      time: '09:06:23 PM',
-      vehicleId: 'TRK-07CD',
-      driver: 'Rohit Sharma',
-      alertType: 'Harsh Braking',
-      severity: 'Warning',
-      status: 'resolved',
-      speed: '62 km/h',
-      location: 'Farah',
-      description: 'Harsh braking event detected. Driver initiated rapid stop near exit.'
-    },
-    {
-      id: 'a4',
-      time: '09:06:23 PM',
-      vehicleId: 'TRK-098F',
-      driver: 'Rohit Sharma',
-      alertType: 'Geofence breach',
-      severity: 'Warning',
-      status: 'info',
-      speed: '70 km/h',
-      location: 'Sikandra',
-      description: 'Vehicle crossed standard zone threshold boundary.'
-    },
-    {
-      id: 'a5',
-      time: '09:06:23 PM',
-      vehicleId: 'TRK-09AB',
-      driver: 'Rohit Sharma',
-      alertType: 'Geofence breach',
-      severity: 'Info',
-      status: 'info',
-      speed: '85 km/h',
-      location: 'Yamuna Expressway',
-      description: 'Vehicle exited the designated service zone.'
-    },
-    {
-      id: 'a6',
-      time: '09:06:23 PM',
-      vehicleId: 'TRK-07CD',
-      driver: 'Rohit Sharma',
-      alertType: 'Geofence breach',
-      severity: 'Warning',
-      status: 'resolved',
-      speed: '60 km/h',
-      location: 'Agra',
-      description: 'Geofence warning: vehicle approaching boundary limits.'
-    },
-    {
-      id: 'a7',
-      time: '09:06:23 PM',
-      vehicleId: 'TRK-09AB',
-      driver: 'Rohit Sharma',
-      alertType: 'Speeding',
-      severity: 'Info',
-      status: 'resolved',
-      speed: '95 km/h',
-      location: 'Mathura',
-      description: 'Temporary speed warning cleared after automatic check.'
-    },
-    {
-      id: 'a8',
-      time: '09:06:23 PM',
-      vehicleId: 'TRK-09AB',
-      driver: 'Rohit Sharma',
-      alertType: 'Speeding',
-      severity: 'Info',
-      status: 'resolved',
-      speed: '90 km/h',
-      location: 'Farah',
-      description: 'Vehicle exceeded standard highway speed recommendation.'
-    },
-    {
-      id: 'a9',
-      time: '09:06:23 PM',
-      vehicleId: 'TRK-07CD',
-      driver: 'Rohit Sharma',
-      alertType: 'Speeding',
-      severity: 'Low Fuel',
-      status: 'resolved',
-      speed: '65 km/h',
-      location: 'Agra',
-      description: 'Warning: Fuel level remaining is under 10% threshold.'
-    },
-    {
-      id: 'a10',
-      time: '09:09:23 PM',
-      vehicleId: 'TRK-098F',
-      driver: 'Rohit Sharma',
-      alertType: 'Speeding',
-      severity: 'Low Fuel',
-      status: 'resolved',
-      speed: '62 km/h',
-      location: 'Mathura',
-      description: 'Warning: Fuel level remaining is under 10% threshold.'
-    }
-  ])
 
-  const [selectedAlert, setSelectedAlert] = React.useState(alerts[0]) // Default select first
+  const [alerts, setAlerts] = React.useState([])
+  const [selectedAlert, setSelectedAlert] = React.useState(null)
   const [searchVal, setSearchVal] = React.useState('')
   const [severityFilter, setSeverityFilter] = React.useState('all')
+  const [newAlertPopup, setNewAlertPopup] = React.useState(null)
 
+  React.useEffect(() => {
+  const loadAlerts = async () => {
+    try {
+      const response = await fetchAlertsApi()
+      const realAlerts = response?.alerts || []
+
+      const formattedAlerts = realAlerts.map((alert) => ({
+        id: alert._id,
+        time: new Date(alert.createdAt).toLocaleTimeString(),
+        vehicleId: alert.vehicle?.vehicleNumber || 'Unknown Vehicle',
+        driver: alert.vehicle?.driverName || 'Unknown Driver',
+        alertType: alert.type || 'alert',
+        severity: alert.severity || 'info',
+        status: alert.isResolved ? 'resolved' : alert.severity || 'info',
+        location: alert.geofence?.name || 'Unknown Location',
+        description: alert.description || alert.title || '',
+      }))
+
+      setAlerts(formattedAlerts)
+
+      if (formattedAlerts.length > 0) {
+        setSelectedAlert(formattedAlerts[0])
+      }
+    } catch (error) {
+      console.error('Failed to load alerts:', error)
+    }
+  }
+
+  loadAlerts()
+}, [])
+
+React.useEffect(() => {
+  const socket = connectSocket()
+
+  const handleNewAlert = async (newAlert) => {
+  if (!newAlert) return
+
+  console.log('🚨 ALERTS PAGE RECEIVED:', newAlert)
+
+  try {
+    const response = await fetchAlertsApi()
+    const realAlerts = response?.alerts || []
+
+    const alert = realAlerts.find(
+      (item) => String(item._id) === String(newAlert._id)
+    )
+
+    if (!alert) {
+      console.warn('Alert not found in populated alerts')
+      return
+    }
+
+    const formattedAlert = {
+      id: alert._id,
+      time: new Date(alert.createdAt).toLocaleTimeString(),
+      vehicleId: alert.vehicle?.vehicleNumber || 'Unknown Vehicle',
+      driver: alert.vehicle?.driverName || 'Unknown Driver',
+      alertType: alert.type || 'alert',
+      severity: alert.severity || 'info',
+      status: alert.isResolved
+        ? 'resolved'
+        : alert.severity || 'info',
+      location: alert.geofence?.name || 'Unknown Location',
+      description: alert.description || alert.title || '',
+    }
+
+    setAlerts((prev) => [
+      formattedAlert,
+      ...prev.filter(
+        (item) => String(item.id) !== String(formattedAlert.id)
+      ),
+    ])
+
+    setSelectedAlert(formattedAlert)
+    setNewAlertPopup(formattedAlert)
+
+    setTimeout(() => {
+      setNewAlertPopup(null)
+    }, 5000)
+
+  } catch (error) {
+    console.error('Failed to fetch new alert details:', error)
+  }
+}
+
+  socket.on('new_alert', handleNewAlert)
+
+  return () => {
+    offSocketEvent('new_alert', handleNewAlert)
+  }
+}, [])
   // Search/Filter logic
   const filteredAlerts = alerts.filter(item => {
     const matchesSearch = item.vehicleId.toLowerCase().includes(searchVal.toLowerCase()) || 
@@ -162,7 +134,33 @@ export default function Alerts({ isDarkMode = false }) {
 
   return (
     <div className="flex-grow overflow-y-auto p-6 md:p-8 flex flex-col gap-6 text-left bg-transparent">
-      
+      {newAlertPopup && (
+  <div className="fixed top-5 right-5 z-[9999] w-[360px] rounded-xl border border-rose-200 bg-white p-4 shadow-2xl">
+    <div className="flex items-start gap-3">
+      <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600">
+        
+      </div>
+
+      <div className="min-w-0">
+        <p className="text-sm font-black text-slate-900">
+          New Fleet Alert
+        </p>
+
+        <p className="mt-1 text-xs font-bold text-rose-600">
+          {newAlertPopup.alertType}
+        </p>
+
+        <p className="mt-1 text-xs text-slate-600">
+          {newAlertPopup.vehicleId} · {newAlertPopup.driver}
+        </p>
+
+        <p className="mt-1 text-[11px] text-slate-500">
+          {newAlertPopup.description}
+        </p>
+      </div>
+    </div>
+  </div>
+)}
       {/* 1. Page Header */}
       <div className="flex items-center justify-between select-none">
         <div>
