@@ -521,7 +521,7 @@ export default function Fleet({ isDarkMode = false }) {
                   <span className="text-[9px] font-black uppercase">Total</span>
                   <Car className="h-3.5 w-3.5 text-blue-500" />
                 </div>
-                <p className={`text-lg font-black mt-1 leading-none ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>1,248</p>
+                <p className={`text-lg font-black mt-1 leading-none ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>40</p>
               </div>
 
               {/* Moving */}
@@ -533,7 +533,7 @@ export default function Fleet({ isDarkMode = false }) {
                   <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
                 </div>
                 <div className="flex items-baseline gap-1 mt-1 leading-none">
-                  <span className={`text-lg font-black leading-none ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>986</span>
+                  <span className={`text-lg font-black leading-none ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>22</span>
                   <span className="text-[9px] font-semibold text-slate-400">79%</span>
                 </div>
               </div>
@@ -547,7 +547,7 @@ export default function Fleet({ isDarkMode = false }) {
                   <span className="h-2 w-2 rounded-full bg-yellow-500"></span>
                 </div>
                 <div className="flex items-baseline gap-1 mt-1 leading-none">
-                  <span className={`text-lg font-black leading-none ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>156</span>
+                  <span className={`text-lg font-black leading-none ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>12</span>
                   <span className="text-[9px] font-semibold text-slate-400">12%</span>
                 </div>
               </div>
@@ -561,7 +561,7 @@ export default function Fleet({ isDarkMode = false }) {
                   <span className="h-2 w-2 rounded-full bg-rose-500"></span>
                 </div>
                 <div className="flex items-baseline gap-1 mt-1 leading-none">
-                  <span className={`text-lg font-black leading-none ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>106</span>
+                  <span className={`text-lg font-black leading-none ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>8</span>
                   <span className="text-[9px] font-semibold text-slate-400">9%</span>
                 </div>
               </div>

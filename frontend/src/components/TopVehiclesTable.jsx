@@ -2,10 +2,10 @@ import React from 'react'
 
 export default function TopVehiclesTable({ isDarkMode = false }) {
   const data = [
-    { id: 'TRK-09AB', driver: 'Rohit Sharma', distance: '450 km', speed: '62 km/h', fuel: '75 L' },
-    { id: 'TRK-07CD', driver: 'Rohit Sharma', distance: '450 km', speed: '62 km/h', fuel: '75 L' },
-    { id: 'TRK-07CD', driver: 'Rohit Sharma', distance: '380 km', speed: '62 km/h', fuel: '75 L' },
-    { id: 'TRK-098F', driver: 'Rohit Sharma', distance: '380 km', speed: '62 km/h', fuel: '75 L' }
+    { id: 'HR38GH5678', driver: 'Sanjay Patel', distance: '40 km', speed: '75 km/h', fuel: '33.1 L' },
+    { id: 'HR25AB7890', driver: 'Zahir Sheikh', distance: '67 km', speed: '62 km/h', fuel: '56 L' },
+    { id: 'UP80AG1870', driver: 'Mohit Agrawal', distance: '54 km', speed: '15 km/h', fuel: '50 L' },
+    { id: 'UP80XY1234', driver: 'Ravi sharma', distance: '34 km', speed: '45 km/h', fuel: '35 L' }
   ]
 
   return (

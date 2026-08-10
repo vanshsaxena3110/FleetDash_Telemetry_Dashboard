@@ -5,7 +5,7 @@ export default function AnalyticsCards({ isDarkMode = false }) {
   const cards = [
     {
       title: 'Total Vehicles',
-      value: '1,248',
+      value: '40',
       trend: '15%',
       isUp: true,
       icon: Car,
@@ -13,7 +13,7 @@ export default function AnalyticsCards({ isDarkMode = false }) {
     },
     {
       title: 'Active Vehicles',
-      value: '986',
+      value: '22',
       trend: '79%',
       isUp: true,
       icon: Activity,
@@ -29,7 +29,7 @@ export default function AnalyticsCards({ isDarkMode = false }) {
     },
     {
       title: 'Distance Travelled Today',
-      value: '15,400 km',
+      value: '34 km',
       trend: '6%',
       isUp: true,
       icon: Navigation,

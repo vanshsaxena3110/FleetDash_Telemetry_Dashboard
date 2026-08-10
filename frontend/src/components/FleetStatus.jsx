@@ -3,10 +3,10 @@ import { ChevronRight } from 'lucide-react'
 
 export default function FleetStatus({ isDarkMode = false, hoveredLegend, setHoveredLegend, onViewAll }) {
   const fleetLegends = [
-    { label: 'On Route', count: 986, pct: '79%', color: 'bg-emerald-500', slice: 'on-route' },
-    { label: 'Idle', count: 156, pct: '12%', color: 'bg-yellow-500', slice: 'idle' },
-    { label: 'Stopped', count: 74, pct: '6%', color: 'bg-rose-500', slice: 'stopped' },
-    { label: 'Offline', count: 32, pct: '3%', color: 'bg-slate-400', slice: 'offline' }
+    { label: 'On Route', count: 22, pct: '79%', color: 'bg-emerald-500', slice: 'on-route' },
+    { label: 'Idle', count: 12, pct: '12%', color: 'bg-yellow-500', slice: 'idle' },
+    { label: 'Stopped', count: 0, pct: '6%', color: 'bg-rose-500', slice: 'stopped' },
+    { label: 'Offline', count: 8, pct: '3%', color: 'bg-slate-400', slice: 'offline' }
   ]
 
   return (
@@ -24,7 +24,7 @@ export default function FleetStatus({ isDarkMode = false, hoveredLegend, setHove
             <circle cx="18" cy="18" r="15.91" fill="none" stroke="#10b981" strokeWidth="4.2" strokeDasharray="79 21" strokeDashoffset="-21" className={hoveredLegend === 'on-route' ? 'scale-105 stroke-[4.8]' : ''} />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
-            <span className={`text-xl font-extrabold block ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>1,248</span>
+            <span className={`text-xl font-extrabold block ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>40</span>
             <span className="text-[8px] text-slate-400 uppercase font-black">Total</span>
           </div>
         </div>

@@ -5,9 +5,9 @@ export default function AnalyticsCharts({ isDarkMode = false }) {
 
   // Doughnut Legends
   const legends = [
-    { label: 'Moving', color: 'bg-emerald-500', value: '79%' },
-    { label: 'Idle', color: 'bg-yellow-500', value: '15%' },
-    { label: 'Offline', color: 'bg-rose-500', value: '6%' }
+    { label: 'Moving', color: 'bg-emerald-500', value: '55%' },
+    { label: 'Idle', color: 'bg-yellow-500', value: '30%' },
+    { label: 'Offline', color: 'bg-rose-500', value: '15%' }
   ]
 
   // Time Range specific datasets for dynamic updates
@@ -44,11 +44,20 @@ export default function AnalyticsCharts({ isDarkMode = false }) {
   const activeData = dataStore[trendRange] || dataStore.daily
 
   // Construct label object arrays for fuel rendering
-  const fuelLabels = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10']
-  const fuelData = activeData.fuel.map((val, idx) => ({
-    label: fuelLabels[idx] || `${idx + 1}`,
-    val: val
-  }))
+  const fuelData = [
+  { label: 'AG-01', vehicle: 'UP80AG1201', val: 8.2 },
+  { label: 'AG-02', vehicle: 'UP80AG1202', val: 7.6 },
+  { label: 'AG-03', vehicle: 'UP80AG1203', val: 9.1 },
+  { label: 'AG-04', vehicle: 'UP80AG1204', val: 8.7 },
+  { label: 'AG-05', vehicle: 'UP80AG1205', val: 7.9 },
+  { label: 'AG-06', vehicle: 'UP80AG1206', val: 9.4 },
+  { label: 'AL-01', vehicle: 'UP81AL3401', val: 10.2 },
+  { label: 'AL-02', vehicle: 'UP81AL3402', val: 8.5 },
+  { label: 'AL-03', vehicle: 'UP81AL3403', val: 9.7 },
+  { label: 'AL-04', vehicle: 'UP81AL3404', val: 8.9 }
+]
+
+const maxFuel = 12
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 select-none">
@@ -74,7 +83,7 @@ export default function AnalyticsCharts({ isDarkMode = false }) {
               <circle cx="18" cy="18" r="15.91" fill="none" stroke="#10b981" strokeWidth="4.2" strokeDasharray="79 21" strokeDashoffset="-21" />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
-              <span className={`text-2xl font-black block ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>75%</span>
+              <span className={`text-2xl font-black block ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>55%</span>
             </div>
           </div>
 
@@ -200,11 +209,73 @@ export default function AnalyticsCharts({ isDarkMode = false }) {
           </div>
 
           {/* X axis labels */}
-          <div className="flex justify-between text-[9px] font-black uppercase text-slate-450 dark:text-slate-500 mt-2.5 px-0.5 select-none">
-            {fuelData.map(item => (
-              <span key={item.label} className="flex-grow text-center text-[8px]">{item.label}</span>
-            ))}
+          {/* SVG-style fuel consumption bar chart */}
+<div className="flex-grow w-full py-4 flex flex-col justify-end">
+
+  <div className="flex items-end justify-between h-40 w-full gap-2 px-1 relative">
+
+    {/* Grid */}
+    <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+      <div className="border-b border-slate-200 dark:border-slate-800 opacity-50"></div>
+      <div className="border-b border-slate-200 dark:border-slate-800 opacity-50"></div>
+      <div className="border-b border-slate-200 dark:border-slate-800 opacity-50"></div>
+      <div className="border-b border-slate-200 dark:border-slate-800 opacity-50"></div>
+    </div>
+
+    {/* Bars */}
+    {fuelData.map((item) => (
+      <div
+        key={item.vehicle}
+        className="relative flex flex-col items-center justify-end h-full flex-1 group z-10"
+      >
+
+        {/* Value */}
+        <span className="text-[8px] font-black text-slate-500 mb-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {item.val}L
+        </span>
+
+        {/* Bar */}
+        <div
+          className="w-full max-w-[18px] bg-emerald-500 hover:bg-emerald-600 rounded-t-md transition-all duration-300 cursor-pointer"
+          style={{
+            height: `${(item.val / maxFuel) * 100}%`
+          }}
+        >
+
+          {/* Tooltip */}
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block z-50 whitespace-nowrap">
+            <div className="bg-slate-950 text-white text-[9px] font-bold px-2 py-1 rounded-md shadow-lg">
+              <div>{item.vehicle}</div>
+              <div className="text-emerald-400">
+                {item.val} L/100 km
+              </div>
+            </div>
           </div>
+
+        </div>
+
+      </div>
+    ))}
+  </div>
+
+  {/* X-axis */}
+  <div className="flex justify-between mt-2 px-1">
+    {fuelData.map((item) => (
+      <span
+        key={item.label}
+        className="flex-1 text-center text-[8px] font-black text-slate-500"
+      >
+        {item.label}
+      </span>
+    ))}
+  </div>
+
+  {/* Unit */}
+  <p className="text-[9px] text-slate-400 font-bold text-center mt-2">
+    Fuel consumption · L/100 km
+  </p>
+
+</div>
         </div>
       </div>
 

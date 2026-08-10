@@ -5,25 +5,25 @@ export default function GeofenceStats({ isDarkMode = false }) {
   const stats = [
     {
       title: 'Active Geofences',
-      value: '1,248',
+      value: '16',
       icon: MapPin,
       colorClass: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20 dark:border-emerald-900/50',
     },
     {
       title: 'Vehicles Inside Zones',
-      value: '25',
+      value: '13',
       icon: Users,
       colorClass: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20 dark:border-emerald-900/50',
     },
     {
       title: "Today's Geofence Breaches",
-      value: '0',
+      value: '2',
       icon: AlertTriangle,
       colorClass: 'bg-rose-50 text-rose-600 dark:bg-rose-950/20 dark:border-rose-900/50',
     },
     {
       title: 'Total Geofence Events',
-      value: '246',
+      value: '25',
       icon: Flag,
       colorClass: 'bg-slate-50 text-slate-600 dark:bg-slate-900/40 dark:border-slate-800',
     }

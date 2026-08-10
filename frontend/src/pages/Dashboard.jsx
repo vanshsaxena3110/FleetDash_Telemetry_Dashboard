@@ -9,6 +9,7 @@ import {
 } from 'react-leaflet'
 import L from 'leaflet'
 
+
 import { useVehicleStore } from '../store/vehicleStore.js'
 
 import Fleet from './Fleet.jsx'
@@ -751,9 +752,11 @@ export default function Dashboard({ onLogout }) {
 
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-950 text-emerald-400">
 
-              <Zap
-                className="h-5 w-5 fill-emerald-400"
-              />
+            <img
+  src="/caricon.jpg"
+  alt="FleetDash"
+  className="h-6 w-8 object-contain"
+/>
 
             </div>
 
@@ -770,7 +773,7 @@ export default function Dashboard({ onLogout }) {
                 }
               `}
             >
-              FleetDash
+              FleetDash 
             </span>
 
           </div>
@@ -1938,7 +1941,7 @@ export default function Dashboard({ onLogout }) {
             flex
             items-center
             justify-center
-            z-50
+            z-9999
             p-4
           "
         >

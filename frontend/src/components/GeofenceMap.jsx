@@ -56,12 +56,7 @@ const customTruckIcon = (color, label) => {
         class="flex flex-col items-center justify-center select-none"
         style="transform: translate(-10px, -24px);"
       >
-        <div
-          class="bg-slate-900 text-white text-[8px] font-black px-1 py-0.5 rounded shadow-sm border border-slate-700/80 mb-0.5 whitespace-nowrap"
-        >
-          ${label}
-        </div>
-
+       
         <div
           class="rounded-lg border border-white p-1 shadow-md flex items-center justify-center ${colorClass}"
         >

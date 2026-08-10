@@ -51,7 +51,7 @@ React.useEffect(() => {
   const handleNewAlert = async (newAlert) => {
   if (!newAlert) return
 
-  console.log('🚨 ALERTS PAGE RECEIVED:', newAlert)
+  console.log('ALERTS PAGE RECEIVED:', newAlert)
 
   try {
     const response = await fetchAlertsApi()

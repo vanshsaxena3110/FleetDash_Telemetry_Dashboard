@@ -129,7 +129,7 @@ setGeofenceVehicles(formattedVehicles)
     })
 
     socket.on('new_alert', (newAlert) => {
-  console.log("🚨 FRONTEND RECEIVED ALERT:", newAlert)
+  console.log(" FRONTEND RECEIVED ALERT:", newAlert)
 
   if (!newAlert) return
 

@@ -5,7 +5,7 @@ export default function AlertCards({ isDarkMode = false }) {
   const cards = [
     {
       title: 'Total Alerts',
-      value: '248',
+      value: '580',
       trend: '15%',
       isUp: true,
       icon: Bell,
@@ -13,7 +13,7 @@ export default function AlertCards({ isDarkMode = false }) {
     },
     {
       title: 'Critical Alerts',
-      value: '25',
+      value: '290',
       trend: '2%',
       isUp: false,
       icon: ShieldAlert,
@@ -21,7 +21,7 @@ export default function AlertCards({ isDarkMode = false }) {
     },
     {
       title: 'Warning Alerts',
-      value: '102',
+      value: '230',
       trend: '21%',
       isUp: false,
       icon: AlertTriangle,
@@ -29,7 +29,7 @@ export default function AlertCards({ isDarkMode = false }) {
     },
     {
       title: 'Resolved Alerts',
-      value: '121',
+      value: '10',
       trend: '12%',
       isUp: true,
       icon: CheckCircle,
